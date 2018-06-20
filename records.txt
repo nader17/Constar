@@ -1,0 +1,1003 @@
+Hieronder zijn alle records die in de “lima/source/records” directory zijn. In deze directory zijn 
+4 files, en records worden per file aangegeven. 
+
+
+———+++++++++++
+file: reclab.pp
+————++++++++++++
+
+Type
+  {- - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - - - }
+  ZeefLijnItem  = Record
+    Naam        : Par8;         {benaming                       }
+    Opening     : LongInt;      {zeefopening in mm ##,###       }
+    Min,Max     : Integer;      {min/max % ###,#                }
+    Reserve     : LongInt;      {spare for special cases        }
+  End;
+  ZeefLijnItemArray = Array [1..MaxZeven] Of ZeefLijnItem;
+
+ZeefLijnRecord = Packed Record
+    UniekNr,SS1,SS2     : LongInt;
+    SetNaam             : Par8;
+    Datum               : Integer;
+    Omschrijving1       : Par25;
+    Omschrijving2       : Par25;
+    Omschrijving3       : Par25;
+    lw_datum,lw_tijd    : integer;
+    lw_user             : Par8;
+    Spare               : Array [430..512] Of Byte;     {}
+    Zeef                : ZeefLijnItemArray;
+  End;
+
+ZeefRestRecord        = Record
+    Opening             : LongInt;
+    ZeefResten          : Array [1..3] Of Integer;      {#### gram      }
+    Waarde              : Integer;
+  End;
+  {- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - }
+  MixArray = Array [1..4] Of Record
+    MArtikel    : Par8;
+    MPercentage : Integer;
+  End;
+  {-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - }
+
+KomponentRecord       = Packed Record
+    UniekNr,SS1,SS2     : LongInt;
+    ARTKgrondPRI        : Par8;
+    Soort               : SoortMateriaal;{1=Zand,2=Grind,3=Cement,4=Vulstof
+                                        ,5=Water,6=Hulpstof,7=Mengsel}
+    HandmatigDoseren    : Char; {Ja --> komt niet in de weeglijst, Nee}
+    Centrale            : Char;
+    OLDGrdAbsorptieV    : integer;
+    OldChain            : Char;
+    OldHidden           : Char;
+    version             : byte;
+    Datum               : Integer;
+    Tijd                : Integer;
+    VolMassa            : Integer;
+    Naam                : Par30;
+    lw_user             : Par8;
+    Opmerking           : Par12;
+    ReceptCode          : Par4;
+
+    Merk                : Par20;
+
+    NominaleSterkte     : Integer;      {Cement         }
+    DosCodJnk           : Par3;
+    Xspare              : Par5;
+
+    Temperatuur         : Integer;      {Water          }
+    SlibPercentage      : Integer;
+    Meetwaarde          : Integer;
+    VolMassaSlib        : Integer;
+   
+    d : record case integer of
+    0:(HoofdWerking,                    {hulpstof       }
+       NevenWerking     : Par20;
+       Kleur,
+       KleurCode        : Par10;
+       pH_Gehalte       : Integer;
+       VasteStofGehalte : Integer;
+       ChlorideGehalte  : Integer);
+    1:(Mix              : MixArray);    {mengsel van komponenten}
+    end;
+
+    Zeeflijn            : Par8;         {Toeslag}
+    Molen,
+    Bedrijf,
+    Schip,
+    WinPlaats           : Par15;
+
+    Onderdruk           : char;
+    prijsTon            : longint;
+    GrdBindmiddelMeetellen : char;
+    Xlw_datum,
+    Xlw_tijd,
+    spare22             : integer;
+    GrdKfactor          : integer;
+
+    ToeslagNummer       : LongInt;
+
+    NatGewicht,
+    DroogGewicht,
+    Absorptie           : Integer;
+
+    Slib,
+    Chloride,
+    NF                  : Integer;
+
+    LoogTest,
+    FulvozuurTest       : Par10;
+
+    VochtNom,
+    OLDVochtMin,
+    OLDVochtMax         : Integer;
+    DatumAnalyse,
+    TijdAnalyse         : Integer;
+    ZR                  : Array [1..MaxZeven] Of ZeefRestRecord;
+  End
+
+
+———++++++++++++++
+file: records.pp
+———++++++++++++++
+
+Type    AlgemeenRecords =       (AlgemeenStandard
+                                ,AlgemeenToeslag
+                                ,AlgemeenCement
+                                ,AlgemeenWater
+                                ,AlgemeenHulpstof
+                                ,AlgemeenBoekhouding
+                                ,AlgemeenStortWijze
+                                ,AlgemeenBonVelden
+                                ,AlgemeenGrondstoffenTL
+                                ,AlgemeenSTV
+                                ,AlgemeenKomponentNamen1
+                                ,AlgemeenKomponentNamen2
+                                ,AlgemeenPrefabArtikel
+                                ,AlgemeenBonopmerkingen
+                                ,AlgemeenHandhelds
+                                ,AlgemeenBegrenzer
+                                ,AlgemeenCollectInstellingen
+                                ,AlgemeenMixxen
+                                ,AlgemeenWeerfase
+                                );
+Type
+  NawRecord     = Packed Record
+    Naam,
+    Adres,
+    Woon        : Par25;
+  End;
+
+  HistoryRecord = Packed Record
+    Geleverd    : LongInt;
+    DatumEerste,
+    DatumLaatste: Integer;
+  End;
+
+  StaffelRecord = Packed record
+    Saantal     : integer;
+    Sprijszone  : Array [0..6] of LongInt;
+  end;
+  Staffels      = Packed Array [1..6] of StaffelRecord; { 180}
+
+  PrijszoneRecord = Packed record
+    naam        : par7;
+    pcods       : array [ 1..15] of integer;  { #* #* ##* ##* ##* ##* ##* ##* ##* ###* ###* ###* #### #### #### }
+    pcodspare   : integer;
+    filler      : par15;
+  end;
+  Prijszones    = Packed Array [0..6] of PrijszoneRecord; { 448}
+
+  ExtraRecord = Packed record
+    Eaantal     : LongInt;
+    Eartikel    : par8;
+  end;
+
+ ExtraArtikels = Array [1..5] of ExtraRecord; { 72}
+
+  CalcArtikelRecord = Packed record
+    Cartikeltje    : par8;
+    Caantal        : LongInt;
+    Cprijs         : LongInt;
+    Cminus         : Char;
+    Csoort         : Char;
+    CRcptOfAuto    : LongInt;
+    btyd,etydklos  : integer;
+    pauz           : shortint;
+  end;
+
+CalcArtikels  = Array [1..16] of CalcArtikelRecord;
+
+  ArtikelSchemaRecord = Packed record
+    ASdatum     : integer;
+    zoneprijs   : array [0..6] of LongInt;
+  end;
+  ArtikelSchema = packed array[1..16] of ArtikelSchemaRecord;
+
+
+  WeeglijstRecord = Packed Record
+    W_Artikel   : Par8;
+    W_Gewicht   : LongInt;
+    OLDw_VochtMin       : Byte;
+    OLDw_VochtMax       : Byte;
+    W_VochtNom  : Byte;         {aangenomen vocht %}
+    W_Soort     : SoortMateriaal;
+  End;
+
+AfgewogenRecord = packed Record
+    A_Artikel   : Par8;
+    A_Gewicht   : LongInt;
+    A_Soort     : SoortMateriaal;
+    A_Vocht     : Byte;
+  End;
+
+  OpmerkingRecord = packed Record
+    datum       : integer;
+    opmerking   : Par45;
+  End;
+  OpmerkingArray = Array [1..7] Of OpmerkingRecord;
+
+
+  AfgewogenArray = Array [Low(WeeglijstArray)..High(WeeglijstArray)] Of AfgewogenRecord;
+
+
+{--------------------------------------------------------------------}
+
+  AannemerRecord = packed record        {Object(RecordHeading)}
+    UniekNr,SS1,SS2     : LongInt;
+    ZoekArg             : Par8;
+    mod_user            : Par8;
+    OVregime            : Par8;
+    DebiA,DebiD,DebiE,
+    DebiMob,DebiS,DebiV,
+    DebiW,DebiP,OldDebi2,clean0 : char;
+    Afhaalvergoeding,
+    Centrumtoeslag,
+    Blokkeren,
+    Contant,
+    ARPverplicht,      
+    EFact,
+    Particulier,
+    WeekFacturen,
+    TegenBonVerplicht,
+    spare2,
+    spare3,spare4       : char;
+    Bedrijf             : Par35;
+    KontaktPersoon      : par30;
+    GlobalDebi          : longint;
+    spare5              : char;
+    mail_alg            : par45;
+    mail_fact           : par50;
+    spare6              : par5;
+    adres               : par25;
+    woon                : par25;
+    factuuradres        : par25;
+    factuurwoon         : par25;
+    Telefoon,
+    Fax,
+    gsmnr               : Par15;
+    spare7              : par10;
+    Aland,Fland         : par2;
+    Apcode,Fpcode       : par6;
+    Ahnum,Fhnum         : longint;
+    Atoev,Ftoev         : par3;
+    XJKswitchdate       : Integer;      {173}
+    XJaarkoopNEW                : Longint;
+    XJaarkoopACT        : LongInt;      {181}
+    GeleverdJaar,
+    GeleverdJaarV,
+    GeleverdJaarVV,
+    GeleverdJaarVVV     : longint;
+    AYear               : Integer;
+    mod_date,
+    mod_time            : integer;
+    Expiratie           : integer;
+    Doorkiesnr          : par15;
+    clean1              : par12;
+    sdateA,sdateD,
+    sdateE,sdateMob,
+    sdateS,sdateV,
+    sdateW,sdateP,
+    jkoopaA,jkoopaD,
+    jkoopaE,jkoopaMob,
+    jkoopaS,jkoopaV,
+    jkoopaW,jkoopaP,
+    jkoopbA,jkoopbD,
+    jkoopbE,jkoopbMob,
+    jkoopbS,jkoopbV,
+    jkoopbW,jkoopbP     : integer;
+    clean2              : par6;
+    smime               : byte;
+    free_space          : packed array[1..156] of char;
+    History             : HistoryRecord;{170}
+    txtzoom             : OpmerkingArray;
+    BetalingsTermijn    : byte;
+    RecVersion          : byte;
+  End;
+
+ Rij2Record    = record
+                    Heen,
+                    Afstand     : integer;
+                    Centrale    : Char;
+                  end;
+
+ Rij2Array     = Array [1..10] of Rij2Record;
+
+WerkRecord = Packed Record
+    UniekNr,SS1,SS2     : LongInt;
+    AannemerId  : RecIdType;
+    InvoerDatum : Integer;
+    WerkBasis,WerkBasisNew: LongInt;            {20}
+    Aflever     : NawRecord;    {75}
+    Opmerking     : Par30;
+    KontaktPersoon: Par15;      {45}
+    History     : HistoryRecord;
+    OVWregime   : Par8;
+    sparea      : array [1..28] of char;
+    BouwSector  : Integer;      {38}
+    Huisnummer  : Par6;
+    PcodABC     : Par2;
+    NBO         : Integer;
+    GPSradius   : Integer;
+    TrailerMag  : Char;
+    WerkType    : Char;
+    Pcod        : Integer;
+    spareb      : par6;
+    GSM         : par15;
+    Referentie2 : par15;
+    WerkMaxTon  : integer;
+    Prijspeildatum: integer;
+    WerkMaxAssen : byte;
+    sparec       : Par3;
+    XXVCertGehad        : Char;
+    RecVersion  : byte;
+    WerkOnHOld  : char;
+    Werknummer  : Par12;
+    OpmBon1,
+    OpmBon2,
+    OpmBon3     : Par32;
+    sparee      : array [1..36] of char;
+    WerkFromDate,
+    lw_datum,
+    lw_tijd     : integer;
+    lw_user     : par8;
+    sparef      : par12;
+    ContractTM  : integer;
+    Rij2        : Rij2Array;
+    opfact1,
+    opfact2     : par30;
+    spareg      : array [538..980] of Char;
+    prijsversie : char;
+    RijHand     : char;
+    gpsLAT,
+    gpsLON      : Longint;
+    mail_WrkfactAlt : par25;
+    spareh      : array [1016..1024] of Char;
+  End;
+
+StortRecord = Packed Record
+    UniekNr,SS1,SS2     : LongInt;
+    AannemerId          : RecIdType;
+    WerkId              : RecIdType;    {  20 }
+    Besteld             : longint;      {  24 }
+    Aanvang,
+    Datum               : Integer;      {  28 }
+    NewReceptNummer,
+    Geleverd            : LongInt;      {  36 }
+    StortWijze          : Par2;         {  38 }
+    NEWStortTempo,
+    MixersPendelen,
+    VolgNummer          : Integer;      {  44 }
+    Centrale,
+    Gereed,
+    WachtBericht        : char;
+    RecVersion          : byte;
+    Consistentie,
+    PrefabVv,
+    KlantLBV            : Char;
+    printline1,
+    printline2          : shortint;
+    TypeStort           : char;   { $ff : normale stort; 'F' fantasy;     					extra sales ; 'P' prefab : extended prefab sales }
+    KortStort,
+    AantalBonnen,
+    Interval,
+    Aanvang2,
+    CRdatum,
+    ExtraRijtijd,
+    StortMaxTon,
+    LosDuur,
+    PompBon,Tklossen    : integer;      {  74 }
+    KlantXC,
+    KlantXD,KlantXS,
+    KlantXF,KlantXA,
+    KlantCG,KlantST     : Integer;      {  88 }
+    lw_datum,lw_tijd,
+    vlw_datum,vlw_tijd  : Integer;      {  96 }
+    lw_user,
+    vlw_user            : par8;         { 112 }
+    EArt5Euro,
+    stortbasis          : Longint;      { 120 }
+    ContactPers,
+    GSM                 : Par15;        { 150 }
+    Urgent              : par30;        { 180 }
+    Opm_bon1,
+    Inf1,Inf2,Opm_bon2,
+    opm_lab             : Par45;        { 405 }
+    artlist     : CalcArtikels;         { 915 }
+    CRfilename  : par10;
+    Prefabbon   : longint;
+    Eart4Euro   : longint;
+    MixxCode    : byte;
+    spareh      : array [1..59] of char;
+    extralist   : ExtraArtikels;        { 987 }
+    OVSregime   : Par8;
+    CGewicht    : longint; { prefab }
+    StortArpId  : RecIdType;
+    LastReceptId: RecIdType;
+    OpFactuur   : Par15;
+    FAhold      : char;         { Y for factuur on hold }
+    FAdatum     : integer;      { factuurdatum, also filepath(key) to 			       													factuur }
+    FAfilename  : par10;        { filename of factuur }
+    RecDamagd   : byte;
+  End;
+
+MixerRecord   = Packed Record
+    UniekNr,SS1,SS2     : LongInt;
+    MixerNummer         : Integer;
+    Kenteken            : Par8;
+    History             : HistoryRecord;
+    MerkAuto            : Par16;
+    Opmerking           : Par24;
+    MAXLadingBeton4     : Integer;
+    MAXLadingBeton123   : Integer;
+    MAXLadingBeton567   : Integer;
+    VIN                 : Par18;
+    spare6              : Par6;
+    Bouwjaar            : Integer;
+    XXAfstand2,XXAfstand3 : integer;
+    WagenOnderdrukken   : Char; {per 02-dec-2008 : indien auto verkocht/ 				niet meer rijdt }
+    WagenEigendom       : Char; {per 30-mei-2007 : YesNo veld     was 											         Eigen, Huurmixer, Vreemd EHV      }
+    Weergeven           : Char; {Y/N weergeven op volgscherm            }
+    Beschikbaar         : Char;
+    Spare4              : Par10;
+    Bonnummer           : Longint;
+    RetourBeton         : integer;
+    CurrentChauffeur    : integer;
+    KILLEDChauffeurGSM  : Par12;
+    KILLEDNaamOpBon             : Char;
+    WagenType           : Char;
+    Spare10             : Par16;
+    GewichtLeeg         : LongInt;
+    LeegweegDatum,
+    LeegweegTijd        : integer;
+    KILLEDMAXLadingCG1,
+    KILLEDLadingCG5,
+    KILLEDMAXLadingCG4  : Integer;
+    NewReceptNummer     : longint;
+    KILLEDAssen         : Byte;
+    TicketNummer        : longint;
+    StatusDeviceID      : longint;
+    StandPlaats         : Char;
+    Spare7              : integer;
+    GPSdate             : integer;
+    Gpstime             : integer;
+    DefaultTrekker      : integer;
+    spare5              : integer;
+    BedrijfNaam         : Par15;
+    GPSremark           : Par35;
+    HistorySTK          : HistoryRecord;
+    APKvervaldatum      : integer;
+  End;
+
+ PeopleRecord  = Packed Record
+    UniekNr,SS1,SS2     : LongInt;
+    PeopleNummer        : Integer;
+    Voornaam            : Par12;
+    Naam                : Par20;
+    dummy               : char;
+    GSM                 : Par15;
+    Email               : Par25;
+    BedrijfNaam         : Par15;
+    Opmerking           : Par24;
+    Alias               : Par12;
+    NaamOpBon,
+    VoornaamOpBon,
+    Beschikbaar,
+    EigenPersoneel,
+    IsChauffeur,
+    Spare1              : Char;
+    Filler              : Array [145..256] Of Char;
+  End;
+
+BonRecord     = Packed Record
+    UniekNr,SS1,SS2     : LongInt;
+    BonNummer           : LongInt;
+    Centrale            : Char;
+    Vervallen           : Char;
+
+    AannemerId          : RecIdType;
+    WerkId              : RecIdType;
+    StortId             : RecIdType;
+    ReceptId            : RecIdType;    {! dubbel, gaan we toch gebruiken}
+    STVMixerId          : RecIdType;    {! dubbel, gaan we toch gebruiken}
+
+    Datum               : Integer;
+
+    MixerNummer,
+    StatusReset,
+    Lading,
+    Gemaakt             : Integer;
+
+    BonGeprint,
+    Beladen,
+    Heenrijden,
+    Aankomst,
+    BeginLossen,
+    EindeLossen,
+    TerugRijden,
+    Retour              : Integer;
+
+    VolgNummer          : Integer;      {copy of stortrecord}
+    StortGeleverd       : LongInt;      {copy of stortrecord}
+    StortBesteld        : LongInt;      {copy of stortrecord}
+    StortStortwijze     : Par2;
+
+    MaakMethode         : integer;
+    RetourCentrale      : char;
+    NewReceptNummer     : longint;
+
+    bw_user             : Par8;
+    bw_datum,bw_tijd    : integer;
+
+    BONWcfofCg,
+    BONklantLBV         : char;
+    BONklantCG,
+    BONklantST,         { 'E' + ST<1 = leveringsbon op samenstelling }
+    BONklantXC,
+    BONklantXD,
+    BONklantXS,
+    BONklantXF,
+    BONklantXA          : integer;
+
+    create_user         : Par8;
+    bonArpId            : LongInt;
+    certificaat         : par12;
+    AbsieT              : integer;
+    PCwarmwater         : integer;
+    vanafhost           : par16;
+    AbsieP              : integer;
+    VloeiMin,VloeiMax   : integer;
+    BONmki              : integer;
+    BONweerfase         : ShortInt;
+    Filler              : Array [421..512] Of Byte;
+    Weeglijst           : WeeglijstArray;
+  End;  {512 bytes}
+
+ChargeRecord  = Packed Record
+    UniekNr,SS1,SS2     : LongInt;
+    BonId               : RecIdType;
+    Datum               : Integer;
+    Tijd                : Integer;
+//    SequenceNummer    : LongInt;              {-3}
+//    ChargeNummer      : Integer;              {-1}
+//    ReceptNummer      : Integer;
+    NewReceptNummer     : LongInt;              {-3}
+    NewChargeNummer     : Byte;                 {-1}
+    SpareByte           : Char;
+    NewSequenceNummer   : Integer;
+
+    Gewicht             : LongInt;
+    Naampje             : String[19];           {-20}
+    Soort               : SoortMateriaal;
+    Centrale            : Char;                 {-1}
+    Artikel             : Par8;
+    Vocht               : Integer;{of slib%}    {-1}{-26}
+  End;
+
+InhuurDetailRecord    = Packed Record  { 64 bytes }
+    dMixNum             : integer;
+    dAanvang            : integer;
+    dMaxM3              : integer;
+    dMixerKENT          : Par8;
+    dChauffTXT          : Par15;
+    dBedrijfTXT         : Par15;
+    dgsmTXT             : Par15;
+    spare               : array [1..5] of char;
+  End;
+
+  InhuurRecord = Packed Record
+    UniekNr,SS1,SS2     : LongInt;
+    dgl_Datum           : integer;
+    dgl_centrale        : char;
+    dgl_DagOpmerking    : Par25;
+    dgl                 : array [1..15] of InhuurdetailRecord; { = 968}
+    filler              : packed array [1..24] of byte;
+  end;
+
+  PFrecord = Record
+    _prijs{Ev}          : Longint;  { voor steenkorrel is dit dus prijs voor EigenVervoer }
+    _artikelcode        : par8;
+    _prijsVv            : LongInt;
+    spare               : par4;
+  end;
+
+ ARP2Record = packed record
+    UniekNr,SS1,SS2     : LongInt;
+    _AannemerID         : Longint;
+    KILLEDWerkID        : Longint;
+    Rcptnum             : Longint;
+    TallPrijs           : Longint;
+    _XC,_XD,_XS,_XF,_XA : integer;
+    _Mix                : integer;
+    _LBV                : char;
+    centrale            : char;
+    klantcode           : par22;
+    WerkId              : array [1..8] of LongInt;
+    TWprijs             : array [1..8] of Longint;
+    receptklasse        : par22;
+    free1               : par8;
+    vermeldfactuur      : par22;
+    free2               : par8;
+    TransportIncl       : char;
+    vanDatum            : array [1..8] of integer; { 12 mei 2014 }
+    tmDatum             : array [1..8] of integer;
+    hidden              : char;
+    VrijeRuimte         : array [223..256] of char;
+  end;
+
+PFLijstRecord = Packed Record
+    UniekNr,SS1,SS2     : LongInt;
+    KILLEDPFlijst_Datum : integer;
+    AannemerID          : Longint;
+    WerkId              : LongInt;
+    KILLEDStortId       : LongInt;
+    GeldigVanaf         : integer;
+    pf_opmerking        : par25;
+    nix                 : char;
+    pfLijst             : packed array [1..42] of PFrecord; { 960 bytes}  { 1..32 regulier, 33..40 samengevoegd, 41/42 scratch }
+    filler              : packed array [895..1024] of byte;
+  end;
+
+GeoRecord = Packed Record
+    autonr              : integer;
+    time                : integer;
+    datatype            : byte;   { 0=normaal/alles, 1=caddy out of office, 2=hidden }
+    status              : byte;
+    gpsLON              : Real;
+    gpsLAT              : Real;
+    speed               : integer;
+    valid               : boolean;
+    centrale            : char;
+    GeoPeopleNr         : integer;
+    someotherstuff      : packed array [1..4] of byte;   { 32 bytes total }
+  end;
+
+ArtikelRecord = Packed Record
+    UniekNr,SS1,SS2     : LongInt;  { 12}
+    ArtkNummer          : par8;
+    ArtkOms             : par40;
+    ArtkEenheidP        : par3;
+    filler0             : integer;
+    Artkschema          : ArtikelSchema; { 480 bytes}
+    ArtkEenheidE        : par3;
+    ArtkEenheidW        : par3;
+    XArtkInitialPrijs   : longint;
+    ArtkKorting         : Char;
+    ArtkSoort           : Char;
+    hidden              : char;
+    EuroKnaller         : char;
+{ prefab }
+    ArtkOmsExtra        : par40;
+    extCode             : par10;
+    Woodcode            : par10;
+    ArtkGroep           : par8;
+    VerpakEenheid       : integer;
+    GewichtVE           : longint;
+    KlossenVE           : integer;
+    filler3             : array [636..1024] of Byte;
+  End;
+
+EventRecord = Packed Record
+    UniekNr,SS1,SS2     : longInt;
+    EVautoNummer,               { heeft betrekking op... }
+    EVchaufNummer,              { "   " "        " op... }
+    EVdatum,
+    EVtijd              : integer;   { 20}
+    EVspare             : char;
+    EVafgehandeld       : char;      { 22}
+    EVcode              : integer;
+    EVaanmaakDatum,
+    EVaanmaakTijd,
+    EVwijzigDatum,
+    EVwijzigTijd        : integer;
+    EVaanmaakUser,
+    EVwijzigUser        : par8;      { 48 }
+    EVopmKort           : par20;
+    EVkmstand           : longint;   { 72 }
+    filler              : array [1..24] of byte;
+    EVopmerking1        : par32;
+    EVopmerking2        : par32;
+    EVopmerking3        : par32;
+    EVopmerking4        : par32;
+    EVopmerking5        : par32;  { 256}
+  end;
+
+ AlgStortWijzeRecord = Record
+    AlgAfkortingg       : Par2;
+    AlgStortTempoo      : Integer;
+    KILLEDAlgLeverTempo : Integer;
+    AlgOmschrijvingSW   : Par20;
+  End;
+
+  AlgMixxRecord = Record
+    AlgMixxNaam         : Par15;
+    vrijeruimte         : par22;
+    AlgMixxR            : byte;
+    AlgMixxG            : byte;
+    AlgMixxB            : byte;
+  End;
+
+  AlgHandheldRecord = Record
+    centrale            : char;
+    actief              : char;
+    sincedate,sincetime : integer;
+    spare               : par10;
+  End;
+  AlgSTVrecord = Record
+    centrales           : par4;
+    spare               : par20;
+  End;
+
+AlgemeenKompNaamRecord =Record
+                            A_Artikel : Par8;
+                            A_Naam    : Par24;
+                          End;
+
+AlgemeenRecord        = Record Case Integer Of
+    0:( Filler0         : Array [1..1024] Of Byte);
+    1:( Filler1         : Array [0..27] Of Byte;
+        Alg_Bonnummer   : LongInt;
+        Alg_WTnummer    : Longint;
+        Alg_AMixnummer  : integer;
+        Alg_PrefabBon   : LongInt;
+(*      Alg_NaamCentrale: Par40;
+        xAlg_Afkorting  : Char;
+        xxAlg_Lpt_Id    : Array [0..7] Of Byte;
+        xAlg_BonPrinter,
+        Alg_Hp_Dpi      : Byte;
+        Alg_Hp_Color    : Char;
+        xxAlg_LoadRange : Integer;
+        Alg_SteunKleur  : Char;
+        Alg_EcoMode     : Char;
+
+        AlgStvMaxTime   : Integer; {150 minuten}
+        AlgStvPreview   : integer; { 30 minuten}
+        AlgGrfMaxMixer  : Integer; { 20}
+        AlgGrfMaxProd   : Integer; {120 m3}
+        AlgGrfMaxTime   : Integer; {120 minuten}
+        AlgGrfPlnStart  : Integer; {6:30}
+        AlgGrfPlnDuur   : integer; { 12 uren}
+        AlgGrfMixer1    : integer; { 900}
+        AlgGrfMixer2    : integer; {1000}
+        AlgGrfMixer3    : integer; {1200} *)
+
+
+
+        );
+
+2:( AlgBoek         : record
+          AlgHandelaar,
+          AlgXOndervracht,
+          AlgXPompMixer,
+          AlgXWachtmin,
+          AlgXStortbak,
+          AlgXRes1,
+          AlgXRes2,
+          AlgXRes3,
+          AlgXRes4              : par16;
+          AlgeXxtraverpomptm3   : Integer;
+          AlgXOndervrachtm3     : Integer;
+          AlgLegaldate          : Integer;
+          Staffel               : Staffels;
+          Prijszone             : PrijsZones;
+       end);
+
+    3:( ALG_PrefabArtikelNr   : longint);
+
+    4:( Alg_Stortwijze2 : Array [1..24] Of AlgStortWijzeRecord);
+    5:( Alg_Handhelds   : Array [9901..9960] of AlgHandheldRecord);
+{    5:( Alg_BonVelden  : array [1..8] of
+                          Record
+                            Centrale    : char;
+                            dummy       : char;
+                            IndentY,
+                            IndentX     : Integer;
+                            Duotickets  : char;
+                            PrintLogo   : char;
+                            spare       : par8;
+                          End);}
+6:( GrondstoffenTranslatie : Array [1..35] Of Char);
+    7:( Alg_BonOpmerkingen : Record
+                           BonOpmerking1 : Par30;
+                           BonOpmerking2 : Par30;
+                           BonOpmerking3 : Par30;
+                           BonOpmerking4 : Par30;
+                           BonOpmerking5 : Par30;
+                          End);
+    8:( STVconfig : Array [1..35] Of AlgSTVrecord);
+    9:( XControleurAanwezig : char                          );
+    10:(Alg_Mixxen      : Array [1..24] Of AlgMixxRecord);
+    11:(Weerfasen       : Array [1..35] Of Char);
+{   10:( collectinstelling : record
+                              printtickets  : char;
+                              printscans    : char;
+                              printextracopy: char;
+                            end;                            );  }
+{    7:( Alg_Raportage  : Array [1..3] Of AlgRaportageRecord);}
+(*  8:( FckAlg_KomponentNamen : Array [1..32] Of AlgemeenKompNaamRecord);*)
+  End;
+
+
+
+————— +++++++++++
+file: recprod.pp
+————-++++++++++++
+
+Type
+  KubusRecord = Packed Record
+    UniekNr,SS1,SS2     : LongInt;
+    Nummer              : LongInt;
+    BonNummer           : LongInt;
+    Centrale            : Char;
+    Opmerking1a         : Par11;
+    Opmerking1b         : Par11;
+    spare1              : Par4;
+    SF_TT2_w1,
+    SF_TT2_w2           : integer;
+    Kubrecid            : byte;
+    SF_Jri_w2           : integer;
+    Datum               : Integer;
+
+    KILLEDMilieuKlasse  : Par2;
+    Kwaliteit           ,               {###}
+    Consistentie        ,               {  #}
+    AanmaakWaterA       ,               {####}
+    MixerNummer         :integer;
+
+    Droogbak,
+    DroogbakNAT,
+    DroogbakDROOG,
+    MonsterNAtg,
+    Vochtg,
+    WaterTot,
+    Water,
+    Bindmiddel          : integer;
+
+    Aannemer            : Par8;
+
+    Tijd                : Integer;
+    Lading              : Integer;
+    Maken               : Integer;
+    Afgewogen           : AfgewogenArray;
+    WcfProef            : Par8;
+
+    VolMassaBeton       ,                       {_Int0}
+    NewDagen            ,                       {_Int0}
+    DrukSterkte_28      ,                       {_Int1}
+    DrukSterkte_x       ,                       {_Int1}
+    BezwijkPatroon      ,                       {_Int0}
+    OntwerpWcf          ,                       {_Int3}
+    GemetenWcf          ,                       {_Int3}
+    TotaalFijn          ,                       {_Int0}
+    AanmaakWaterT       ,                       {_Int0}
+    Zetmaat             ,                       {_Int0}
+    Schudmaat           ,                       {_Int0}
+    Verdichtingsmaat    ,                       {_Int2}
+    SpecieTemperatuur   ,                       {_Int1}
+    VolMassaSpecie      ,                       {_Int0}
+    LuchtGehalte        ,                       {_Int1}
+    ExtraWaterToe       ,                       {_Int0}
+    Uitlevering          : integer;             {_Int1}
+
+    SoortProef          , {'C' = controle proef, 'G' = geschiktheidsproef}
+    WarmWater           : char;
+    Produktie           : longint;               {_Long2}
+
+    UitvloeiMaat        : Integer;
+    MaxIndringing       : Integer;      {max 50 mm}
+    NewReceptNummer     : LongInt;
+
+    XXNewDebiteur               : Par10;
+    KubusMiX            : integer;
+    KILLEDAfgChargeIds  : array [1..16] of longint;
+    DroogbakWCF         : integer;
+    ExtraWaterPoe       : integer;
+    Opmerking2a         : par11;
+    Opmerking2b         : par11;
+    Reserve             : array [499..508] of char;{}
+    receptId            : longint;
+
+    SF_TT1_w1,
+    SF_Tt1_w2,
+    SF_Sta_w1,
+    SF_Sta_w2,
+    SF_Jri_w1           : integer;
+
+    Gewicht_Specie      : Integer; {#### 8000 g                 }
+    Gewicht_28          : Integer;
+    Kracht_28           : Integer;
+    Kracht_x            : Integer; {Tonnen of kN (kiloNewton)   }
+    XOLDRekenFaktor     : Integer; { #.##    9.81 of 1.00        killed 14-05-2012 }
+  End;
+
+———++++++++++++++
+file: recrcpt.pp
+——++++++++++++++
+
+Type
+  {- - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - - - }
+  ReceptKomponentArray = Array [1..15] Of Record
+      RArtikel  : Par8;
+      RGewenst  : Integer;
+      RExtra    : Integer;      {% bij hulpstoffen en k-factor bij vulstoffen }
+      ROpBon    : integer;
+      Rspare    : longint;
+  End;
+
+  ArtikelsType = Packed Array [1..7] Of Par8;
+
+  ReceptRecord = Packed Record
+    UniekNr,SS1,SS2     : LongInt;
+    RVersion            : byte;
+    FactByUser          : Par8;
+    PinnedCent          : Char;
+    NewReceptNummer     : LongInt;
+    ZeeflijnVoorschrift : Par8;
+    ZeeflijnBerekenen   : Par8;
+    DatumBerekening,
+    TijdBerekening        : integer; { is grondstoffen moment tijdopname }
+    LLDate              : Integer;
+    Naam                : Par20;
+    OldHidden           : Char;
+    MidX                : Integer;
+    ValidFromDate,
+    ValidFromTime       : Integer;  { historische recepten }
+    CreatedByUser       : par8;
+    int_opm2            : Par4;
+    OldChain            : char;
+    LLTime              : Integer;      { historische recepten }
+    Kwaliteit           : Integer;
+    Consistentie        : Integer;
+    LuchtPercentage     : Integer;      { ##.#  }
+    MinFijn,                            {###.#  }
+    MaxFijn,                            {###.#  }
+    GewenstFijn         : Integer;      {###.#  }
+    MaxWCF,
+    GewenstWCF          : Integer;      {  #.###}
+    ExtraZand           : Integer;
+    ZandPerc            : Integer;
+    MaxZandPerc         : Integer;
+    Zeef1mm             : Integer;
+    GrindPerc           : Integer;
+    TotaalFijn          : Integer;
+    BonOpmerking1,
+    BonOpmerking2,
+    BonOpmerking3       : Par20;
+    RKomponent          : ReceptKomponentArray;
+{PLC besturing}
+    Maakmethode         : Integer;
+{Weeglijst}
+    Weeglijst           : WeeglijstArray;
+{History}
+    Geleverd            : Longint;
+    ELDate,ELTime       : integer;
+    BonKOMOzwarten      : Char;         {komo logo zwart maken          }
+    FactEditDate        : Integer;
+    best_maxcharge      : Integer;
+    VloeiMin            : Integer;
+    VloeiMax            : Integer;
+    BasisPrijsArtikelEN : Par8;
+    OmschrijvingEN206   : Par60;
+    KgFact              : array [3..6] of LOngint;
+    AttestNummer        : Par20;
+    int_opm1            : Par15;
+    best_mengtijd,
+    best_specietemp,
+    best_maxslib,
+    best_maakmeth       : integer;
+    Artikels            : ArtikelsType;
+    BlindArtikel        : par8;
+    BlindArtikelPerc    : integer;
+    sequence            : integer;
+    WcfofCg             : char;
+    GewichtenOpBon      : char;
+    Liters              : integer;
+    best_HulpstofNaar   : char;
+    kostprijs           : integer;
+    XtraOpFact          : Par20;
+    mki                 : integer;
+    ChlorideKlasse      : char;
+    filler              : array [1..76] of byte;
+  End;
+
